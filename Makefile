@@ -30,7 +30,7 @@ endif
 
 
 ifndef BLOCK_SIZE
-	BLOCK_SIZE = 41
+	BLOCK_SIZE = 8
 endif
 
 ifeq ($(CC), pgcc)
