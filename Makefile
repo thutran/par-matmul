@@ -32,6 +32,8 @@ endif
 ifndef BLOCK_SIZE
 	BLOCK_SIZE = 8
 endif
+# BLOCKED_NAME = benchmark-blocked-$(BLOCK_SIZE)
+
 
 ifeq ($(CC), pgcc)
 	CFLAGS = -c9x $(OPT) $(SIMD) $(OMP) -DBLOCK_SIZE=$(BLOCK_SIZE)
@@ -45,7 +47,8 @@ endif
 #LDLIBS = -lrt -Wl,--start-group $(MKLROOT)/lib/intel64/libmkl_intel_lp64.a $(MKLROOT)/lib/intel64/libmkl_sequential.a $(MKLROOT)/lib/intel64/libmkl_core.a -Wl,--end-group -lpthread -lm
 LDLIBS = -lrt  -I$(MKLROOT)/include -Wl,-L$(MKLROOT)/lib/intel64/ -lmkl_intel_lp64 -lmkl_core -lmkl_sequential -lpthread -lm -ldl $(OMP)
 
-targets = benchmark-naive benchmark-blocked benchmark-blas
+# targets = benchmark-naive benchmark-blocked benchmark-blas
+targets = benchmark-naive benchmark-blocked-$(BLOCK_SIZE) benchmark-blas
 objects = benchmark.o dgemm-naive.o dgemm-blocked.o dgemm-blas.o
 
 .PHONY : default
@@ -57,7 +60,8 @@ all : clean $(targets)
 
 benchmark-naive : benchmark.o dgemm-naive.o 
 	$(CC) -o $@ $^ $(LDLIBS)
-benchmark-blocked : benchmark.o dgemm-blocked.o
+# benchmark-blocked : benchmark.o dgemm-blocked.o
+benchmark-blocked-$(BLOCK_SIZE) : benchmark.o dgemm-blocked.o
 	$(CC) -o $@ $^ $(LDLIBS)
 benchmark-blas : benchmark.o dgemm-blas.o
 	$(CC) -o $@ $^ $(LDLIBS)
