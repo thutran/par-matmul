@@ -9,7 +9,7 @@ ifeq ($(CC), gcc)
 else ifeq ($(CC), icc)
 	SIMD = -axCORE-AVX2
 else ifeq ($(CC), pgcc)
-	SIMD = -tp=haswell-64
+	SIMD = -tp=haswell
 else
 	SIMD = 
 endif

@@ -22,6 +22,20 @@ const char* dgemm_desc = "Simple blocked dgemm.";
 
 #define min(a,b) (((a)<(b))?(a):(b))
 
+/*transpose lda-by-lda matrix*/ 
+static void transpose(int lda, double* const src, double* restrict dst){
+  int n_cache_lines = lda*lda/CACHE_LINE_DOUBLE;
+  #pragma omp parallel for
+  for (int i=0; i<=n_cache_lines; ++i){
+    for (int j=0; j<CACHE_LINE_DOUBLE && ((i*CACHE_LINE_DOUBLE+j)<lda*lda); ++j){
+      // id = i+j
+      int col = (i*CACHE_LINE_DOUBLE+j)%lda; // column in src
+      int row = (i*CACHE_LINE_DOUBLE+j)/lda; // row in src
+      dst[col*lda + row] = src[i*CACHE_LINE_DOUBLE+j];
+    }
+  }
+}
+
 /* This auxiliary subroutine performs a smaller dgemm operation
  *  C := C + A * B
  * where C is M-by-N, A is M-by-K, and B is K-by-N. */
