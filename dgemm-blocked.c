@@ -17,7 +17,11 @@ const char* dgemm_desc = "Simple blocked dgemm.";
 
 
 #if !defined(BLOCK_SIZE)
-#define BLOCK_SIZE 8
+#define BLOCK_SIZE 16
+#endif
+
+#if !defined(CACHE_LINE_DOUBLE)
+#define CACHE_LINE_DOUBLE 8 
 #endif
 
 #define min(a,b) (((a)<(b))?(a):(b))
@@ -41,18 +45,18 @@ static void transpose(int lda, double* const src, double* restrict dst){
  * where C is M-by-N, A is M-by-K, and B is K-by-N. */
 static void do_block (int lda, int M, int N, int K, double* A, double* B, double* C)
 {
-  /* For each column j of B */ 
-    for (int j = 0; j < N; ++j)   
-  /* For each row i of A */
-  for (int i = 0; i < M; ++i)
-    
-    {
-      /* Compute C(i,j) */
-      double cij = C[i+j*lda];
-      for (int k = 0; k < K; ++k)
-	cij += A[i+k*lda] * B[k+j*lda];
-      C[i+j*lda] = cij;
+  /* order: jki */
+  // column in B
+  for (int j=0; j<N; ++j){
+    // A*B pair
+    for (int k=0; k<K; ++k){
+      // row in A
+      for (int i=0; i<M; ++i){
+        C[i+j*lda] += A[i+k*lda] * B[k+j*lda];
+      }
     }
+  }
+
 }
 
 /* This routine performs a dgemm operation

@@ -30,7 +30,7 @@ endif
 
 
 ifndef BLOCK_SIZE
-	BLOCK_SIZE = 8
+	BLOCK_SIZE = 16
 endif
 # BLOCKED_NAME = benchmark-blocked-$(BLOCK_SIZE)
 

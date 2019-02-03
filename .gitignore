@@ -1,0 +1,8 @@
+*
+!*.c
+!job*
+!Makefile
+!*.sh
+!*.sbatch
+!*.pbs
+!.gitignore
