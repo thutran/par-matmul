@@ -29,7 +29,7 @@ const char* dgemm_desc = "Simple blocked dgemm.";
 /*transpose lda-by-lda matrix*/ 
 static void transpose(int lda, double* const src, double* restrict dst){
   int n_cache_lines = lda*lda/CACHE_LINE_DOUBLE;
-  #pragma omp parallel for
+  // #pragma omp parallel for
   for (int i=0; i<=n_cache_lines; ++i){
     for (int j=0; j<CACHE_LINE_DOUBLE && ((i*CACHE_LINE_DOUBLE+j)<lda*lda); ++j){
       // id = i+j
@@ -47,15 +47,14 @@ static void do_block (int lda, int M, int N, int K, double* A, double* B, double
 {
   /* order: jki (BCA) */
   // column in B
-  for (int j=0; j<N; ++j){
+  for (int j=0; j<N; ++j)
     // A*B pair
-    for (int k=0; k<K; ++k){
+    for (int k=0; k<K; ++k)
+      // icc compiler loop unrolling
+      #pragma unroll(BLOCK_SIZE)
       // row in A
-      for (int i=0; i<M; ++i){
+      for (int i=0; i<M; ++i)
         C[i+j*lda] += A[i+k*lda] * B[k+j*lda];
-      }
-    }
-  }
 }
 
 /*cache oblivious*/
@@ -106,21 +105,21 @@ static void do_block_oblivious (int lda, int M, int N, int K, double* A, double*
 void square_dgemm (int lda, double* A, double* B, double* C)
 {
   // // For each block-row of A 
-  // for (int i = 0; i < lda; i += BLOCK_SIZE)
-  //   // For each block-column of B 
-  //   for (int j = 0; j < lda; j += BLOCK_SIZE)    
-  //     // Accumulate block dgemms into block of C 
-  //     for (int k = 0; k < lda; k += BLOCK_SIZE)
-  //     {
-  //     	// Correct block dimensions if block "goes off edge of" the matrix 
-  //     	int M = min (BLOCK_SIZE, lda-i);
-  //     	int N = min (BLOCK_SIZE, lda-j);
-  //     	int K = min (BLOCK_SIZE, lda-k);
+  for (int i = 0; i < lda; i += BLOCK_SIZE)
+    // For each block-column of B 
+    for (int j = 0; j < lda; j += BLOCK_SIZE)    
+      // Accumulate block dgemms into block of C 
+      for (int k = 0; k < lda; k += BLOCK_SIZE)
+      {
+      	// Correct block dimensions if block "goes off edge of" the matrix 
+      	int M = min (BLOCK_SIZE, lda-i);
+      	int N = min (BLOCK_SIZE, lda-j);
+      	int K = min (BLOCK_SIZE, lda-k);
 
-  //     	/* Perform individual block dgemm */
-  //     	do_block(lda, M, N, K, A + i + k*lda, B + k + j*lda, C + i + j*lda);
-  //     }
+      	/* Perform individual block dgemm */
+      	do_block(lda, M, N, K, A + i + k*lda, B + k + j*lda, C + i + j*lda);
+      }
 
   // cache-oblivious
-  do_block_oblivious(lda, lda, lda, lda, A, B, C);
+  // do_block_oblivious(lda, lda, lda, lda, A, B, C);
 }

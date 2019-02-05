@@ -6,3 +6,4 @@
 !*.sbatch
 !*.pbs
 !.gitignore
+!*.make
