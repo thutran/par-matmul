@@ -5,7 +5,7 @@ CC = gcc
 OPT = -O3
 
 ifeq ($(CC), gcc)
-	SIMD = -march=native -mtune=native -mavx2 -funroll-loops -ftree-vectorize -ffast-math
+	SIMD = -march=native -mtune=native -msse4.2 -mavx2 -funroll-loops -ftree-vectorize -ffast-math -faggressive-loop-optimizations -ftree-loop-distribution -floop-interchange
 else ifeq ($(CC), icc)
 	SIMD = -axCORE-AVX2 -no-prec-div 
 else ifeq ($(CC), pgcc)
@@ -35,10 +35,14 @@ endif
 # BLOCKED_NAME = benchmark-blocked-$(BLOCK_SIZE)
 
 
-ifeq ($(CC), pgcc)
+ifeq ($(CC), gcc)
+	CFLAGS = -Wall -std=gnu99 $(OPT) $(SIMD) $(OMP) -DBLOCK_SIZE=$(BLOCK_SIZE)
+else ifeq ($(CC), icc)
+	CFLAGS = -std=gnu99 $(OPT) $(SIMD) $(OMP) -DBLOCK_SIZE=$(BLOCK_SIZE)
+else ifeq ($(CC), pgcc)
 	CFLAGS = -c9x $(OPT) $(SIMD) $(OMP) -DBLOCK_SIZE=$(BLOCK_SIZE)
 else
-	CFLAGS = -Wall -std=gnu99 $(OPT) $(SIMD) $(OMP) -DBLOCK_SIZE=$(BLOCK_SIZE)
+	CFLAGS = 
 endif
 
 

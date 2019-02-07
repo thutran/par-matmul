@@ -5,9 +5,10 @@ CC = gcc
 OPT = -O3
 
 ifeq ($(CC), gcc)
-	SIMD = -march=core-avx2 -mtune=core-avx2 -mavx2 -funroll-loops -ftree-vectorize -ffast-math
+#	SIMD = -march=core-avx2 -mtune=core-avx2 -mavx2 -funroll-loops -ftree-vectorize -ffast-math
+	SIMD = -march=haswell -mtune=native -mcpu=haswell -mavx2 -funroll-loops -ftree-vectorize -ffast-math -faggressive-loop-optimizations -ftree-loop-distribution -floop-interchange
 else ifeq ($(CC), icc)
-	SIMD = -axCORE-AVX2
+	SIMD = -axCORE-AVX2 
 else ifeq ($(CC), pgcc)
 	SIMD = -tp=haswell
 else
