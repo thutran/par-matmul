@@ -1,5 +1,5 @@
 #!/bin/bash
-#PBS -A mfb9_a_g_sc_default
+#PBS -A open
 #PBS -l nodes=1:ppn=1
 #PBS -l pmem=512mb
 #PBS -l walltime=00:10:00
